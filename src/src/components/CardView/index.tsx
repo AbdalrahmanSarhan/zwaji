@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createElement } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, memo, createElement } from 'react';
 import { useCardData } from './useCardData';
 import { CardHeader } from './CardHeader';
 import { CardFilters } from './CardFilters';
@@ -9,6 +9,11 @@ import { SavedCardsPanel } from './SavedCardsPanel';
 interface CardViewProps {
   userType: 'husband' | 'wife' | 'both';
 }
+const MemoizedCardHeader = memo(CardHeader);
+const MemoizedCardSearch = memo(CardSearch);
+const MemoizedCardContent = memo(CardContent);
+const MemoizedCardNavigation = memo(CardNavigation);
+const MemoizedSavedCardsPanel = memo(SavedCardsPanel);
 export function CardView({
   userType
 }: CardViewProps) {
@@ -41,32 +46,37 @@ export function CardView({
       return () => clearTimeout(timer);
     }
   }, [animateCard]);
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentCardIndex < filteredCards.length - 1) {
       setFlipped(false);
       setAnimateCard(true);
+      const nextIndex = currentCardIndex + 1;
       setTimeout(() => {
-        setCurrentCardIndex(currentCardIndex + 1);
+        setCurrentCardIndex(nextIndex);
+        setAnimateCard(false);
       }, 200);
     }
-  };
-  const handlePrevious = () => {
+  }, [currentCardIndex, filteredCards.length]);
+  const handlePrevious = useCallback(() => {
     if (currentCardIndex > 0) {
       setFlipped(false);
       setAnimateCard(true);
+      const prevIndex = currentCardIndex - 1;
       setTimeout(() => {
-        setCurrentCardIndex(currentCardIndex - 1);
+        setCurrentCardIndex(prevIndex);
+        setAnimateCard(false);
       }, 200);
     }
-  };
-  const handleSave = () => {
-    if (!savedCards.includes(currentCardIndex)) {
-      setSavedCards([...savedCards, currentCardIndex]);
+  }, [currentCardIndex]);
+  const handleSave = useCallback(() => {
+    setSavedCards(prev => {
+      if (prev.includes(currentCardIndex)) {
+        return prev.filter(index => index !== currentCardIndex);
+      }
       showSaveNotification();
-    } else {
-      setSavedCards(savedCards.filter(index => index !== currentCardIndex));
-    }
-  };
+      return [...prev, currentCardIndex];
+    });
+  }, [currentCardIndex]);
   const showSaveNotification = () => {
     const notification = document.createElement('div');
     notification.className = 'fixed top-24 right-1/2 transform translate-x-1/2 bg-green-100 text-green-800 px-4 py-2 rounded-full shadow-lg z-50 animate-fadeIn';
@@ -79,30 +89,31 @@ export function CardView({
       }, 300);
     }, 2000);
   };
-  const toggleFlip = () => {
-    setFlipped(!flipped);
-  };
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-    if (showSearch) {
-      setSearchQuery('');
-    }
-  };
-  const toggleSavedCardsPanel = () => {
-    setShowSavedCardsPanel(!showSavedCardsPanel);
-  };
-  const currentCard = filteredCards[currentCardIndex];
-  const isSaved = savedCards.includes(currentCardIndex);
+  const toggleFlip = useCallback(() => {
+    setFlipped(prev => !prev);
+  }, []);
+  const toggleSearch = useCallback(() => {
+    setShowSearch(prev => {
+      if (prev) setSearchQuery('');
+      return !prev;
+    });
+  }, []);
+  const toggleSavedCardsPanel = useCallback(() => {
+    setShowSavedCardsPanel(prev => !prev);
+  }, []);
+  // Memoize current card
+  const currentCard = useMemo(() => filteredCards[currentCardIndex], [filteredCards, currentCardIndex]);
+  const isSaved = useMemo(() => savedCards.includes(currentCardIndex), [savedCards, currentCardIndex]);
   return <div className="max-w-4xl mx-auto">
-      <CardHeader activeFilter={activeFilter} setActiveFilter={setActiveFilter} showSearch={showSearch} toggleSearch={toggleSearch} savedCardsCount={savedCards.length} toggleSavedCardsPanel={toggleSavedCardsPanel} />
-      {showSearch && <CardSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} filteredCardsLength={filteredCards.length} resetFilters={resetFilters} />}
+      <MemoizedCardHeader activeFilter={activeFilter} setActiveFilter={setActiveFilter} showSearch={showSearch} toggleSearch={toggleSearch} savedCardsCount={savedCards.length} toggleSavedCardsPanel={toggleSavedCardsPanel} />
+      {showSearch && <MemoizedCardSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} filteredCardsLength={filteredCards.length} resetFilters={resetFilters} />}
       {(activeFilter || searchQuery) && filteredCards.length > 0 && <div className="mb-4 flex justify-center">
           <button onClick={resetFilters} className="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-full text-sm transition-colors duration-200 inline-flex items-center">
             <span>إلغاء التصفية</span>
           </button>
         </div>}
-      {currentCard && <CardContent card={currentCard} flipped={flipped} toggleFlip={toggleFlip} animateCard={animateCard} isSaved={isSaved} handleSave={handleSave} />}
-      <CardNavigation currentIndex={currentCardIndex} totalCards={filteredCards.length} handlePrevious={handlePrevious} handleNext={handleNext} />
-      {showSavedCardsPanel && <SavedCardsPanel savedCards={savedCards} allCards={filteredCards} toggleSavedCardsPanel={toggleSavedCardsPanel} setCurrentCardIndex={setCurrentCardIndex} setFlipped={setFlipped} />}
+      {currentCard && <MemoizedCardContent card={currentCard} flipped={flipped} toggleFlip={toggleFlip} animateCard={animateCard} isSaved={isSaved} handleSave={handleSave} />}
+      <MemoizedCardNavigation currentIndex={currentCardIndex} totalCards={filteredCards.length} handlePrevious={handlePrevious} handleNext={handleNext} />
+      {showSavedCardsPanel && <MemoizedSavedCardsPanel savedCards={savedCards} allCards={filteredCards} toggleSavedCardsPanel={toggleSavedCardsPanel} setCurrentCardIndex={setCurrentCardIndex} setFlipped={setFlipped} />}
     </div>;
 }

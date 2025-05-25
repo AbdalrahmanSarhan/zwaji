@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { XIcon, CheckCircleIcon, InfoIcon, StarIcon, ShareIcon, VideoIcon, HeartIcon } from 'lucide-react';
+interface UpdateItemProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+const UpdateItem = memo(({
+  icon,
+  title,
+  description
+}: UpdateItemProps) => <div className="flex">
+    {icon}
+    <div>
+      <p className="font-medium text-slate-800">{title}</p>
+      <p className="text-sm text-slate-600">{description}</p>
+    </div>
+  </div>);
 interface UpdatesDialogProps {
   onClose: () => void;
 }
-export function UpdatesDialog({
+export const UpdatesDialog = memo(({
   onClose
-}: UpdatesDialogProps) {
-  const handleShare = async () => {
+}: UpdatesDialogProps) => {
+  const handleShare = useCallback(async () => {
     try {
       const shareData = {
         title: 'تطبيق الإرشاد الزوجي الإسلامي',
@@ -16,14 +32,13 @@ export function UpdatesDialog({
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback for browsers that don't support the Web Share API
         await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
         alert('تم نسخ رابط التطبيق إلى الحافظة');
       }
     } catch (error) {
       console.error('Error sharing:', error);
     }
-  };
+  }, []);
   return <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col animate-fadeIn">
         <div className="p-5 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-100 flex justify-between items-center">
@@ -53,18 +68,7 @@ export function UpdatesDialog({
               <h3 className="text-lg font-bold text-sky-800">الإصدار 1.1</h3>
             </div>
             <div className="space-y-4 text-slate-700">
-              <div className="flex">
-                <CheckCircleIcon className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-1 ml-3" />
-                <div>
-                  <p className="font-medium text-slate-800">
-                    إضافة قسم "بطاقات معرفية"
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    مجموعة من البطاقات المعرفية حول حقوق الزوجين في الإسلام،
-                    تشمل آيات وأحاديث وأحكام فقهية وحِكَم
-                  </p>
-                </div>
-              </div>
+              <UpdateItem icon={<CheckCircleIcon className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-1 ml-3" />} title="إضافة قسم 'بطاقات معرفية'" description="مجموعة من البطاقات المعرفية حول حقوق الزوجين في الإسلام" />
               <div className="flex">
                 <CheckCircleIcon className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-1 ml-3" />
                 <div>
@@ -178,4 +182,5 @@ export function UpdatesDialog({
         </div>
       </div>
     </div>;
-}
+});
+UpdatesDialog.displayName = 'UpdatesDialog';
