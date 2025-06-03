@@ -1,15 +1,27 @@
-name: autoupdate
+name: Deploy to cPanel via FTP
+
 on:
-  # This will trigger on all pushes to all branches.
-  push: {}
+  push:
+    branches:
+      - main
 
 jobs:
-  autoupdate:
-    name: autoupdate
-    runs-on: ubuntu-22.04
-    permissions: # Add explicit permissions
-      contents: write # Grants write access to repository contents
+  ftp-deploy:
+    runs-on: ubuntu-latest
     steps:
-      - uses: docker://chinthakagodawita/autoupdate-action:v1
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install deps and build
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ftp.yourdomain.com
+          username: your_cpanel_user
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist/
+          server-dir: /public_html/landing/
