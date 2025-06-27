@@ -1,32 +1,45 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { LogOutIcon } from 'lucide-react';
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+}
 interface DashboardNavigationProps {
-  navItems: Array<{
-    id: string;
-    label: string;
-    icon: React.ReactNode;
-  }>;
-  activeTab: string;
-  handleTabChange: (tab: string) => void;
+  navItems: NavItem[];
+  userType: 'husband' | 'wife' | 'both' | 'engaged';
   mobileMenuOpen: boolean;
   onReset: () => void;
 }
 export function DashboardNavigation({
-  navItems = [],
-  // Add default empty array
-  activeTab,
-  handleTabChange,
+  navItems,
+  userType,
   mobileMenuOpen,
   onReset
 }: DashboardNavigationProps) {
-  return <nav className={`bg-white shadow-md md:w-64 md:sticky md:top-20 md:h-[calc(100vh-5rem)] transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'fixed top-16 right-0 h-screen z-20 w-3/4 max-w-xs transform translate-x-0' : 'fixed top-16 right-0 h-screen z-20 w-3/4 max-w-xs transform translate-x-full md:transform-none'}`}>
-      <div className="p-4 space-y-2 overflow-y-auto h-full">
-        {navItems?.map(item => <button key={item.id} onClick={() => handleTabChange(item.id)} className={`w-full text-right py-3 px-4 rounded-md flex items-center transition-all duration-200 ${activeTab === item.id ? 'bg-sky-100 text-sky-700 shadow-sm' : 'hover:bg-gray-100'}`}>
-            {item.icon}
-            <span>{item.label}</span>
-          </button>)}
-        <div className="md:hidden mt-8 pt-6 border-t border-gray-200">
-          <button onClick={onReset} className="w-full text-right py-3 px-4 rounded-md flex items-center text-rose-600 hover:bg-rose-50">
-            <span>العودة لاختيار المسار</span>
+  return <nav className={`bg-white shadow-md md:shadow-none transition-all duration-300 ease-in-out md:w-64 md:flex-shrink-0 md:border-l border-amber-100 md:static md:block z-30 fixed inset-y-0 right-0 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+      <div className="p-4 h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto">
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-slate-400 mb-3 px-2">
+              القائمة الرئيسية
+            </h3>
+            <ul className="space-y-1">
+              {navItems.map(item => <li key={item.id}>
+                  <Link to={`${item.path}`} className={`flex items-center px-3 py-2.5 rounded-lg text-slate-900 hover:bg-amber-50 transition-colors duration-200`}>
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                </li>)}
+            </ul>
+          </div>
+        </div>
+        <div className="pt-4 border-t border-slate-100">
+          <button onClick={onReset} className="flex items-center w-full px-3 py-2.5 rounded-lg text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition-colors duration-200">
+            <LogOutIcon className="h-5 w-5 ml-3" />
+            <span>تسجيل الخروج</span>
           </button>
         </div>
       </div>

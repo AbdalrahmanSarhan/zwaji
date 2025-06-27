@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { XIcon, CalendarIcon, ClockIcon, CheckIcon, UserIcon, MonitorIcon, UsersIcon } from 'lucide-react';
+import { XIcon, CalendarIcon, ClockIcon, CheckIcon, UserIcon, MonitorIcon, UsersIcon, CreditCardIcon, AlertCircleIcon } from 'lucide-react';
 import { Consultant } from './index';
 interface BookingFormProps {
   consultant: Consultant;
@@ -21,6 +21,8 @@ export function BookingForm({
   const [topic, setTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [showPaymentInstructions, setShowPaymentInstructions] = useState(false);
   useEffect(() => {
     // Prevent scrolling when modal is open
     document.body.style.overflow = 'hidden';
@@ -39,11 +41,21 @@ export function BookingForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    // If payment method is selected and it's CliQ or bank transfer, show payment instructions
+    if (paymentMethod === 'cliq' || paymentMethod === 'bank') {
+      setShowPaymentInstructions(true);
       setIsSubmitting(false);
-      setIsSuccess(true);
-    }, 1500);
+    } else {
+      // For cash payments, show success immediately
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+      }, 1500);
+    }
+  };
+  const handleCompletePayment = () => {
+    setShowPaymentInstructions(false);
+    setIsSuccess(true);
   };
   const getConsultationPrice = () => {
     if (!consultationType) return '';
@@ -53,7 +65,7 @@ export function BookingForm({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden">
         <div className="p-4 bg-sky-50 border-b border-sky-100 flex justify-between items-center sticky top-0 z-10">
           <h3 className="font-bold text-sky-900">
-            {step === 1 ? 'اختر موعداً مناسباً' : step === 2 ? 'أكمل بيانات الحجز' : isSuccess ? 'تم الحجز بنجاح' : 'حجز موعد'}
+            {step === 1 ? 'اختر موعداً مناسباً' : step === 2 ? 'أكمل بيانات الحجز' : showPaymentInstructions ? 'تعليمات الدفع' : isSuccess ? 'تم الحجز بنجاح' : 'حجز موعد'}
           </h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-sky-100 text-slate-500 hover:text-slate-700 transition-colors">
             <XIcon className="h-5 w-5" />
@@ -170,19 +182,139 @@ export function BookingForm({
                   </label>
                   <textarea value={topic} onChange={e => setTopic(e.target.value)} required rows={3} className="w-full px-3 py-2 rounded-md border border-slate-200 focus:border-sky-300 focus:ring focus:ring-sky-100 focus:outline-none" placeholder="اكتب نبذة مختصرة عن موضوع الاستشارة..." />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    طريقة الدفع
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {consultationType === 'inPerson' && <button type="button" onClick={() => setPaymentMethod('cliq')} className={`p-3 border rounded-lg flex flex-col items-center justify-center transition-colors ${paymentMethod === 'cliq' ? 'bg-sky-50 border-sky-400 ring-2 ring-sky-200' : 'border-slate-200 hover:bg-slate-50'}`}>
+                        <div className="w-8 h-8 flex items-center justify-center mb-1">
+                          📱
+                        </div>
+                        <span className="text-sm font-medium">CliQ</span>
+                      </button>}
+                    {consultationType === 'inPerson' && <button type="button" onClick={() => setPaymentMethod('cash')} className={`p-3 border rounded-lg flex flex-col items-center justify-center transition-colors ${paymentMethod === 'cash' ? 'bg-sky-50 border-sky-400 ring-2 ring-sky-200' : 'border-slate-200 hover:bg-slate-50'}`}>
+                        <div className="w-8 h-8 flex items-center justify-center mb-1">
+                          💵
+                        </div>
+                        <span className="text-sm font-medium">نقداً</span>
+                      </button>}
+                    <button type="button" onClick={() => setPaymentMethod('bank')} className={`p-3 border rounded-lg flex flex-col items-center justify-center transition-colors ${paymentMethod === 'bank' ? 'bg-sky-50 border-sky-400 ring-2 ring-sky-200' : 'border-slate-200 hover:bg-slate-50'}`}>
+                      <div className="w-8 h-8 flex items-center justify-center mb-1">
+                        🏦
+                      </div>
+                      <span className="text-sm font-medium">حوالة بنكية</span>
+                    </button>
+                    {consultationType === 'online' && <button type="button" onClick={() => setPaymentMethod('cliq')} className={`p-3 border rounded-lg flex flex-col items-center justify-center transition-colors ${paymentMethod === 'cliq' ? 'bg-sky-50 border-sky-400 ring-2 ring-sky-200' : 'border-slate-200 hover:bg-slate-50'}`}>
+                        <div className="w-8 h-8 flex items-center justify-center mb-1">
+                          📱
+                        </div>
+                        <span className="text-sm font-medium">CliQ</span>
+                      </button>}
+                  </div>
+                </div>
               </div>
               <div className="mt-8 pt-4 border-t border-slate-100 flex gap-3">
                 <button type="button" onClick={() => setStep(1)} className="flex-1 py-2.5 rounded-md font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors duration-200">
                   السابق
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 py-2.5 rounded-md font-medium bg-sky-600 hover:bg-sky-700 text-white transition-colors duration-200 flex items-center justify-center">
+                <button type="submit" disabled={isSubmitting || !paymentMethod} className="flex-1 py-2.5 rounded-md font-medium bg-sky-600 hover:bg-sky-700 text-white transition-colors duration-200 flex items-center justify-center">
                   {isSubmitting ? <>
                       <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
-                      <span>جاري الحجز...</span>
+                      <span>جاري المعالجة...</span>
                     </> : <span>تأكيد الحجز</span>}
                 </button>
               </div>
             </form>}
+          {showPaymentInstructions && <div className="animate-fadeIn">
+              <div className="p-6 border border-slate-200 rounded-lg bg-slate-50 mb-6">
+                <h3 className="font-bold text-lg text-slate-800 mb-4">
+                  تعليمات الدفع عبر{' '}
+                  {paymentMethod === 'cliq' ? 'CliQ' : 'الحوالة البنكية'}
+                </h3>
+                {paymentMethod === 'cliq' && <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-lg border border-slate-200">
+                      <p className="font-medium text-slate-700 mb-2">
+                        خطوات الدفع عبر CliQ:
+                      </p>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600">
+                        <li>قم بتسجيل الدخول إلى تطبيق البنك الخاص بك</li>
+                        <li>انقر على إجراء الدفع/التحويل باستخدام CliQ</li>
+                        <li>
+                          اكتب معرف الاسم المستعار الخاص بنا:{' '}
+                          <span className="font-bold">zwajisite</span>
+                        </li>
+                        <li>
+                          قم بكتابة مبلغ الطلب النهائي:{' '}
+                          <span className="font-bold">
+                            {getConsultationPrice()}
+                          </span>
+                        </li>
+                        <li>اختر اسم بنك المؤسسة المصرفية العربية</li>
+                        <li>
+                          بعد إتمام عملية الدفع، انقر على "تم الدفع" أدناه
+                        </li>
+                      </ol>
+                    </div>
+                  </div>}
+                {paymentMethod === 'bank' && <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-lg border border-slate-200">
+                      <p className="font-medium text-slate-700 mb-2">
+                        تفاصيل الحساب البنكي:
+                      </p>
+                      <div className="space-y-2 text-sm text-slate-600">
+                        <div className="flex flex-col">
+                          <span className="font-bold">اسم البنك:</span>
+                          <span>البنك الإسلامي الأردني</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold">اسم المستفيد:</span>
+                          <span>مركز الإرشاد الأسري للاستشارات</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold">رقم الحساب:</span>
+                          <span>1234567890</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold">رقم الآيبان (IBAN):</span>
+                          <div className="bg-amber-50 p-2 rounded border border-amber-100 my-1 font-mono text-center">
+                            JO94 JIBA 0130 0000 0012 3456 7890
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-2 border-t border-slate-100">
+                        <p className="text-sm text-slate-600">
+                          بعد إتمام التحويل، يرجى إرسال صورة من إيصال التحويل
+                          إلى رقم الواتساب: 0779958770
+                        </p>
+                      </div>
+                    </div>
+                  </div>}
+                <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mt-4">
+                  <p className="font-medium text-amber-800 mb-2">للتأكيد:</p>
+                  <p className="text-sm text-amber-700">
+                    بعد إتمام التحويل، يرجى التواصل معنا على الرقم: 0779958770
+                    لتأكيد استلام المبلغ
+                  </p>
+                </div>
+                <div className="bg-sky-50 p-4 rounded-lg border border-sky-200 mt-4">
+                  <div className="flex items-start">
+                    <AlertCircleIcon className="h-5 w-5 text-sky-500 mt-0.5 ml-2 flex-shrink-0" />
+                    <p className="text-sm text-sky-700">
+                      سيتم تفعيل الاستشارة مباشرة بعد تأكيد استلام المبلغ
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowPaymentInstructions(false)} className="flex-1 py-2.5 rounded-md font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors duration-200">
+                  رجوع
+                </button>
+                <button type="button" onClick={handleCompletePayment} className="flex-1 py-2.5 rounded-md font-medium bg-green-600 hover:bg-green-700 text-white transition-colors duration-200">
+                  تم الدفع
+                </button>
+              </div>
+            </div>}
           {isSuccess && <div className="text-center py-6 animate-fadeIn">
               <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckIcon className="h-10 w-10 text-green-600" />

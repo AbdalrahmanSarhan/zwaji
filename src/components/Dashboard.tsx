@@ -15,6 +15,7 @@ import { EngagementPhase } from './EngagementPhase';
 import { ChildrenRights } from './ChildrenRights';
 import { EducationalVideos } from './EducationalVideos';
 import { MarriageTools } from './MarriageTools';
+import { DonationModal } from './DonationModal';
 interface DashboardProps {
   userType: 'husband' | 'wife' | 'both' | 'engaged';
   onReset: () => void;
@@ -25,6 +26,7 @@ export function Dashboard({
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState(userType === 'engaged' ? 'preparation' : 'cards');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showDonationModal, setShowDonationModal] = useState(false);
   const userTypeText = userType === 'husband' ? 'الزوج' : userType === 'wife' ? 'الزوجة' : userType === 'engaged' ? 'المقبلين على الزواج' : 'الزوجين';
   const userTypeColor = userType === 'husband' ? 'text-sky-700' : userType === 'wife' ? 'text-rose-600' : userType === 'engaged' ? 'text-purple-600' : 'text-amber-600';
   const toggleMobileMenu = () => {
@@ -132,6 +134,9 @@ export function Dashboard({
           </h1>
         </div>
         <div className="flex items-center">
+          <button onClick={() => setShowDonationModal(true)} className="text-rose-600 hover:text-rose-700 transition-colors duration-200 text-sm md:text-base px-3 py-1 rounded-md hover:bg-rose-50 ml-3">
+            دعم المشروع
+          </button>
           <button onClick={onReset} className="text-slate-600 hover:text-sky-700 transition-colors duration-200 text-sm md:text-base px-3 py-1 rounded-md hover:bg-sky-50">
             تغيير المسار
           </button>
@@ -191,5 +196,6 @@ export function Dashboard({
           سرحان - جميع الحقوق محفوظة
         </p>
       </footer>
+      <DonationModal isOpen={showDonationModal} onClose={() => setShowDonationModal(false)} />
     </div>;
 }

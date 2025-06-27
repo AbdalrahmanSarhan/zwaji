@@ -1,5 +1,7 @@
 import React from 'react';
-import { HeartIcon, MenuIcon, XIcon, SparklesIcon } from 'lucide-react';
+import { HeartIcon, SparklesIcon, MenuIcon, XIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { urlMappings } from '../../utils/urlMappings';
 interface DashboardHeaderProps {
   userType: 'husband' | 'wife' | 'both' | 'engaged';
   onReset: () => void;
@@ -12,6 +14,7 @@ export function DashboardHeader({
   toggleMobileMenu,
   mobileMenuOpen
 }: DashboardHeaderProps) {
+  const navigate = useNavigate();
   const userTypeText = userType === 'husband' ? 'الزوج' : userType === 'wife' ? 'الزوجة' : userType === 'engaged' ? 'المقبلين على الزواج' : 'الزوجين';
   const userTypeColor = userType === 'husband' ? 'text-sky-700' : userType === 'wife' ? 'text-rose-600' : userType === 'engaged' ? 'text-purple-600' : 'text-amber-600';
   return <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-30">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon, UsersIcon, HeartIcon, SparklesIcon } from 'lucide-react';
+import { urlMappings } from '../utils/urlMappings';
 interface WelcomeProps {
   onSelectUserType: (type: 'husband' | 'wife' | 'both' | 'engaged') => void;
 }
@@ -10,7 +11,7 @@ export function Welcome({
   const navigate = useNavigate();
   const handleSelectUserType = (type: 'husband' | 'wife' | 'both' | 'engaged') => {
     onSelectUserType(type);
-    navigate(`/${type}`);
+    navigate(`/${urlMappings.userTypePaths[type]}`);
   };
   return <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden bg-gradient-to-b from-amber-50 to-white">
       <div className="absolute inset-0 opacity-5">
