@@ -7,7 +7,7 @@ interface ConsultantsContextType {
   deleteConsultant: (id: number) => void;
   loading: boolean;
 }
-const ConsultantsContext = createContext<ConsultantsContextType | undefined>(undefined);
+export const ConsultantsContext = createContext<ConsultantsContextType | undefined>(undefined);
 export function ConsultantsProvider({
   children
 }: {

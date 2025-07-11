@@ -16,7 +16,7 @@ interface VideosContextType {
   deleteVideo: (id: string) => void;
   getVideosByPath: (path: string) => Video[];
 }
-const VideosContext = createContext<VideosContextType | undefined>(undefined);
+export const VideosContext = createContext<VideosContextType | undefined>(undefined);
 // Mock data for initial videos
 const initialVideos: Video[] = [{
   id: '1',

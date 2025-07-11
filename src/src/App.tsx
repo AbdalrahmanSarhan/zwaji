@@ -8,6 +8,8 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { urlMappings } from './utils/urlMappings'
 import { VideosProvider } from './components/admin/VideosContext'
+import { ConsultationRequestsProvider } from './components/admin/ConsultationRequestsContext'
+import { ContactProvider } from './components/admin/ContactContext'
 // Lazy load engagement components for better performance
 const EngagementLayout = React.lazy(() =>
   import('./components/engagement/EngagementLayout').then((module) => ({
@@ -109,132 +111,136 @@ export function App() {
   }
   return (
     <ErrorBoundary>
-      <VideosProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-amber-50 text-slate-800 font-sans">
-            <Routes>
-              <Route path="/admin/*" element={<AdminDashboard />} />
-              <Route
-                path="/"
-                element={
-                  !userType ? (
-                    <Welcome onSelectUserType={handleSelectUserType} />
-                  ) : (
-                    <Navigate
-                      to={`/${urlMappings.userTypePaths[userType]}`}
-                      replace
+      <ContactProvider>
+        <ConsultationRequestsProvider>
+          <VideosProvider>
+            <BrowserRouter>
+              <div className="min-h-screen bg-amber-50 text-slate-800 font-sans">
+                <Routes>
+                  <Route path="/admin/*" element={<AdminDashboard />} />
+                  <Route
+                    path="/"
+                    element={
+                      !userType ? (
+                        <Welcome onSelectUserType={handleSelectUserType} />
+                      ) : (
+                        <Navigate
+                          to={`/${urlMappings.userTypePaths[userType]}`}
+                          replace
+                        />
+                      )
+                    }
+                  />
+                  {/* Routes for different user types */}
+                  <Route
+                    path="/ana-zawj/*"
+                    element={
+                      userType ? (
+                        <Dashboard userType="husband" onReset={handleReset} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/ana-zawja/*"
+                    element={
+                      userType ? (
+                        <Dashboard userType="wife" onReset={handleReset} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/maarefa-3amma/*"
+                    element={
+                      userType ? (
+                        <Dashboard userType="both" onReset={handleReset} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/moqbilin-ala-alzawaj/*"
+                    element={
+                      userType ? (
+                        <Dashboard userType="engaged" onReset={handleReset} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  {/* Engagement routes with lazy loading */}
+                  <Route path="/moqbilin-ala-alzawaj/engagement">
+                    <Route
+                      index
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
                     />
-                  )
-                }
-              />
-              {/* Routes for different user types */}
-              <Route
-                path="/ana-zawj/*"
-                element={
-                  userType ? (
-                    <Dashboard userType="husband" onReset={handleReset} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
-              <Route
-                path="/ana-zawja/*"
-                element={
-                  userType ? (
-                    <Dashboard userType="wife" onReset={handleReset} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
-              <Route
-                path="/maarefa-3amma/*"
-                element={
-                  userType ? (
-                    <Dashboard userType="both" onReset={handleReset} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
-              <Route
-                path="/moqbilin-ala-alzawaj/*"
-                element={
-                  userType ? (
-                    <Dashboard userType="engaged" onReset={handleReset} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
-              {/* Engagement routes with lazy loading */}
-              <Route path="/moqbilin-ala-alzawaj/engagement">
-                <Route
-                  index
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="definition"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="rules"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="communication"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="allowed"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="challenges"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="tips"
-                  element={
-                    <Suspense fallback={<LoadingView />}>
-                      <EngagementLayout />
-                    </Suspense>
-                  }
-                />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-            {showUpdatesDialog && (
-              <UpdatesDialog onClose={handleCloseUpdatesDialog} />
-            )}
-          </div>
-        </BrowserRouter>
-      </VideosProvider>
+                    <Route
+                      path="definition"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="rules"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="communication"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="allowed"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="challenges"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="tips"
+                      element={
+                        <Suspense fallback={<LoadingView />}>
+                          <EngagementLayout />
+                        </Suspense>
+                      }
+                    />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                {showUpdatesDialog && (
+                  <UpdatesDialog onClose={handleCloseUpdatesDialog} />
+                )}
+              </div>
+            </BrowserRouter>
+          </VideosProvider>
+        </ConsultationRequestsProvider>
+      </ContactProvider>
     </ErrorBoundary>
   )
 }

@@ -15,7 +15,8 @@
     "react-router-dom": "^6.26.2",
     "lucide-react": "^0.441.0",
     "framer-motion": "^11.5.4",
-    "react-helmet": "^6.1.0"
+    "react-helmet": "^6.1.0",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "@types/node": "^20.11.18",
